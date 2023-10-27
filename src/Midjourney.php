@@ -59,12 +59,11 @@ class Midjourney {
 
     private static function firstWhere($array, $key, $value = null)
     {
+        \Log::error("Discord Message", ['message' => $array, 'key' => $key, 'value' => $value]);
+
         foreach ($array as $item)
         {
-            if (
-                (is_callable($key) and $key($item)) or
-                (is_string($key) and str_starts_with($item->{$key}, $value))
-            )
+            if (str_starts_with($item->{$key}, $value))
             {
                 return $item;
             }
@@ -135,9 +134,7 @@ class Midjourney {
         $response = self::$client->get('channels/' . self::$channel_id . '/messages');
         $response = json_decode((string) $response->getBody());
 
-        \Log::error("Discord Message", ['message' => $response]);
-
-        $raw_message = self::firstWhere($response['message'], 'content', "**{$prompt}** - <@" . self::$user_id . '> (fast)');
+        $raw_message = self::firstWhere($response, 'content', "**{$prompt}** - <@" . self::$user_id . '> (fast)');
 
         if (is_null($raw_message)) return null;
 
