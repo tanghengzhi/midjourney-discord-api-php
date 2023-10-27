@@ -11,10 +11,6 @@ class Midjourney {
 
     protected const APPLICATION_ID = '936929561302675456';
 
-    protected const DATA_ID = '938956540159881230';
-
-    protected const DATA_VERSION = '1118961510123847772';
-
     protected const SESSION_ID = '2fb980f65e5c9a77c96ca01f2c242cf6';
 
     private static $client;
@@ -26,6 +22,10 @@ class Midjourney {
     private static $guild_id;
 
     private static $user_id;
+
+    private $data_id;
+
+    private $data_version;
 
     public function __construct($channel_id, $oauth_token)
     {
@@ -43,6 +43,13 @@ class Midjourney {
         $response = json_decode((string) $request->getBody());
 
         self::$guild_id = $response->guild_id;
+
+        $response = self::$client->get('applications/' . self::APPLICATION_ID . '/commands');
+        $body = $response->getBody()->getContents();
+        $json = json_decode($body, true);
+
+        $this->data_id       = $json[0]['id'];
+        $this->data_version  = $json[0]['version'];
 
         $request = self::$client->get('users/@me');
         $response = json_decode((string) $request->getBody());
@@ -75,8 +82,8 @@ class Midjourney {
             'channel_id' => self::$channel_id,
             'session_id' => self::SESSION_ID,
             'data' => [
-                'version' => self::DATA_VERSION,
-                'id' => self::DATA_ID,
+                'version' => $this->data_version,
+                'id' => $this->data_id,
                 'name' => 'imagine',
                 'type' => 1,
                 'options' => [[
@@ -85,9 +92,9 @@ class Midjourney {
                     'value' => $prompt
                 ]],
                 'application_command' => [
-                    'id' => self::DATA_ID,
+                    'id' => $this->data_id,
                     'application_id' => self::APPLICATION_ID,
-                    'version' => self::DATA_VERSION,
+                    'version' => $this->data_version,
                     'default_member_permissions' => null,
                     'type' => 1,
                     'nsfw' => false,
