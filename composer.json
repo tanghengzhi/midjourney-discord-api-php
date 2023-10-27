@@ -1,5 +1,5 @@
 {
-    "name": "ferranfg/midjourney-php",
+    "name": "tanghengzhi/midjourney-php",
     "description": "Generate images using Midjourney Bot through the Discord API.",
     "keywords": ["midjourney", "midjourney-bot", "midjourney-api-bot"],
     "license": "MIT",
