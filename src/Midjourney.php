@@ -57,13 +57,13 @@ class Midjourney {
         self::$user_id = $response->id;
     }
 
-    private static function firstWhere($array, $key, $value = null)
+    private static function firstWhere($message, $content)
     {
-        \Log::error("Discord Message", ['message' => $array, 'key' => $key, 'value' => $value]);
+        \Log::error("Discord Message", ['message' => $message, 'content' => $content]);
 
-        foreach ($array as $item)
+        foreach ($message as $item)
         {
-            if (str_starts_with($item->{$key}, $value))
+            if (str_starts_with($item->content, $content))
             {
                 return $item;
             }
@@ -134,7 +134,7 @@ class Midjourney {
         $response = self::$client->get('channels/' . self::$channel_id . '/messages');
         $response = json_decode((string) $response->getBody());
 
-        $raw_message = self::firstWhere($response, 'content', "**{$prompt}** - <@" . self::$user_id . '> (fast)');
+        $raw_message = self::firstWhere($response, "**{$prompt}** - <@" . self::$user_id . '> (fast)');
 
         if (is_null($raw_message)) return null;
 
@@ -215,11 +215,11 @@ class Midjourney {
         $response = json_decode((string) $response->getBody());
 
         $message_index = $upscale_index + 1;
-        $message = self::firstWhere($response, 'content', "**{$prompt}** - Image #{$message_index} <@" . self::$user_id . '>');
+        $message = self::firstWhere($response, "**{$prompt}** - Image #{$message_index} <@" . self::$user_id . '>');
 
         if (is_null($message))
         {
-            $message = self::firstWhere($response, 'content', "**{$prompt}** - Upscaled by <@" . self::$user_id . '> (fast)');
+            $message = self::firstWhere($response, "**{$prompt}** - Upscaled by <@" . self::$user_id . '> (fast)');
         }
 
         if (is_null($message)) return null;
