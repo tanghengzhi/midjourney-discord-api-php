@@ -135,6 +135,8 @@ class Midjourney {
         $response = self::$client->get('channels/' . self::$channel_id . '/messages');
         $response = json_decode((string) $response->getBody());
 
+        \Log::error("Discord Message", ['message' => $response]);
+
         $raw_message = self::firstWhere($response, function ($item) use ($prompt)
         {
             return (
