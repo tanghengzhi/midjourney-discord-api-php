@@ -137,14 +137,7 @@ class Midjourney {
 
         \Log::error("Discord Message", ['message' => $response]);
 
-        $raw_message = self::firstWhere($response, function ($item) use ($prompt)
-        {
-            return (
-                str_starts_with($item->content, "**{$prompt}** - <@" . self::$user_id . '>') and
-                ! str_contains($item->content, '%') and
-                str_ends_with($item->content, '(fast)')
-            );
-        });
+        $raw_message = self::firstWhere($response, 'content', "**{$prompt}** - <@" . self::$user_id . '> (fast)');
 
         if (is_null($raw_message)) return null;
 
