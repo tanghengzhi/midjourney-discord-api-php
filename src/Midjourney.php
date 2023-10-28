@@ -209,17 +209,20 @@ class Midjourney {
             throw new Exception('Upscale index must be between 0 and 3.');
         }
 
+        /**
+         * @var Prompts $prompt
+         */
         $prompt = $message->prompt;
 
         $response = self::$client->get('channels/' . self::$channel_id . '/messages');
         $response = json_decode((string) $response->getBody());
 
         $message_index = $upscale_index + 1;
-        $message = self::firstWhere($response, "**{$prompt}** - Image #{$message_index} <@" . self::$user_id . '>');
+        $message = self::firstWhere($response, "{$prompt->withoutImagePrompts()}** - Image #{$message_index} <@" . self::$user_id . '>');
 
         if (is_null($message))
         {
-            $message = self::firstWhere($response, "**{$prompt}** - Upscaled by <@" . self::$user_id . '> (fast)');
+            $message = self::firstWhere($response, "{$prompt->withoutImagePrompts()}** - Upscaled by <@" . self::$user_id . '> (fast)');
         }
 
         if (is_null($message)) return null;
