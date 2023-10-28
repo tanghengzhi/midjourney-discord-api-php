@@ -134,7 +134,7 @@ class Midjourney {
         $response = self::$client->get('channels/' . self::$channel_id . '/messages');
         $response = json_decode((string) $response->getBody());
 
-        $raw_message = self::firstWhere($response, "**{$prompt->withoutImagePrompts()}** - <@" . self::$user_id . '> (fast)');
+        $raw_message = self::firstWhere($response, "{$prompt->withoutImagePrompts()}** - <@" . self::$user_id . '> (fast)');
 
         if (is_null($raw_message)) return null;
 
