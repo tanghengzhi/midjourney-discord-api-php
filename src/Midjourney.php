@@ -63,7 +63,7 @@ class Midjourney {
 
         foreach ($message as $item)
         {
-            if (str_starts_with($item->content, $content))
+            if (str_ends_with($item->content, $content))
             {
                 return $item;
             }
@@ -72,7 +72,7 @@ class Midjourney {
         return null;
     }
 
-    public function imagine(string $prompt)
+    public function imagine(Prompts $prompt)
     {
         $params = [
             'type' => 2,
@@ -88,7 +88,7 @@ class Midjourney {
                 'options' => [[
                     'type' => 3,
                     'name' => 'prompt',
-                    'value' => $prompt
+                    'value' => $prompt->toString()
                 ]],
                 'application_command' => [
                     'id' => $this->data_id,
@@ -129,12 +129,12 @@ class Midjourney {
         return $imagine_message;
     }
 
-    public function getImagine(string $prompt)
+    public function getImagine(Prompts $prompt)
     {
         $response = self::$client->get('channels/' . self::$channel_id . '/messages');
         $response = json_decode((string) $response->getBody());
 
-        $raw_message = self::firstWhere($response, "**{$prompt}** - <@" . self::$user_id . '> (fast)');
+        $raw_message = self::firstWhere($response, "**{$prompt->withoutImagePrompts()}** - <@" . self::$user_id . '> (fast)');
 
         if (is_null($raw_message)) return null;
 
@@ -234,7 +234,7 @@ class Midjourney {
         return null;
     }
 
-    public function generate($prompt, $upscale_index = 0)
+    public function generate(Prompts $prompt, $upscale_index = 0)
     {
         $imagine = $this->imagine($prompt);
 
