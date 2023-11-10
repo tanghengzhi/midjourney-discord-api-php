@@ -12,9 +12,9 @@ class Prompts
 
     public function __construct($imagePrompts, $textPrompt, $parameters)
     {
-        $this->imagePrompts = $imagePrompts;
+        $this->imagePrompts = $imagePrompts ?? "";
         $this->textPrompt = $textPrompt;
-        $this->parameters = $parameters;
+        $this->parameters = $parameters ?? "";
     }
 
     public function toString(): string
