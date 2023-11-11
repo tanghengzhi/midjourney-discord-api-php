@@ -10,20 +10,20 @@ class Prompts
 
     private string $parameters;
 
-    public function __construct($imagePrompts, $textPrompt, $parameters)
+    public function __construct(?string $imagePrompts, string $textPrompt, ?string $parameters)
     {
-        $this->imagePrompts = $imagePrompts ?? "";
-        $this->textPrompt = $textPrompt;
-        $this->parameters = $parameters ?? "";
+        $this->imagePrompts = $imagePrompts ? trim($imagePrompts) : "";
+        $this->textPrompt = trim($textPrompt);
+        $this->parameters = $parameters ? trim($parameters) : "";
     }
 
     public function toString(): string
     {
-        return "{$this->imagePrompts} {$this->textPrompt} {$this->parameters}";
+        return trim("{$this->imagePrompts} {$this->textPrompt} {$this->parameters}");
     }
 
-    public function withoutImagePrompts()
+    public function withoutImagePrompts(): string
     {
-        return "{$this->textPrompt} {$this->parameters}";
+        return trim("{$this->textPrompt} {$this->parameters}");
     }
 }
