@@ -142,7 +142,7 @@ class MidjourneyAsync {
         ]);
     }
 
-    public function getMessages(Prompts $prompt)
+    public function getMessages()
     {
         $response = self::$client->get('channels/' . self::$channel_id . '/messages');
         $response = json_decode((string) $response->getBody());
