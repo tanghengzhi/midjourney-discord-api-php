@@ -111,9 +111,11 @@ class Midjourney {
             ]
         ];
 
-        self::$client->post('interactions', [
+        $response = self::$client->post('interactions', [
             'json' => $params
         ]);
+
+        \Log::error("Imagine", ['response' => $response]);
 
         sleep(8);
 
