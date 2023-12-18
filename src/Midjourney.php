@@ -57,13 +57,28 @@ class Midjourney {
         self::$user_id = $response->id;
     }
 
-    private static function firstWhere($message, $content)
+    private static function strEndsWith($message, $content)
     {
         \Log::error("Discord Message", ['message' => $message, 'content' => $content]);
 
         foreach ($message as $item)
         {
             if (str_ends_with($item->content, $content))
+            {
+                return $item;
+            }
+        }
+
+        return null;
+    }
+
+    private static function strContains($message, $content)
+    {
+        \Log::error("Discord Message", ['message' => $message, 'content' => $content]);
+
+        foreach ($message as $item)
+        {
+            if (str_contains($item->content, $content))
             {
                 return $item;
             }
@@ -120,18 +135,25 @@ class Midjourney {
             'responseBody' => $response->getBody(),
         ]);
 
-        sleep(8);
+        $try = 0;
+        $imagineMessage = (object)['status' => ImagineStatus::NOT_START];
 
-        $imagine_message = null;
-
-        while (is_null($imagine_message))
+        while ($imagineMessage->status != ImagineStatus::FINISHED)
         {
-            $imagine_message = $this->getImagine($prompt);
+            if ($try >= 3 && $imagineMessage->status == ImagineStatus::NOT_START) {
+                throw new Exception("Imagine Start Timeout");
+            }
 
-            if (is_null($imagine_message)) sleep(8);
+            if ($try >= 10) {
+                throw new Exception("Imagine Timeout");
+            }
+
+            sleep(6);
+            $imagineMessage = $this->getImagine($prompt);
+            $try++;
         }
 
-        return $imagine_message;
+        return $imagineMessage;
     }
 
     public function getImagine(Prompts $prompt)
@@ -139,15 +161,25 @@ class Midjourney {
         $response = self::$client->get('channels/' . self::$channel_id . '/messages');
         $response = json_decode((string) $response->getBody());
 
-        $raw_message = self::firstWhere($response, "{$prompt->withoutImagePrompts()}** - <@" . self::$user_id . '> (fast)');
+        if ($raw_message = self::strEndsWith($response, "{$prompt->withoutImagePrompts()}** - <@" . self::$user_id . '> (fast)')) {
+            return (object) [
+                'status' => ImagineStatus::FINISHED,
+                'id' => $raw_message->id,
+                'prompt' => $prompt,
+                'raw_message' => $raw_message
+            ];
+        }
 
-        if (is_null($raw_message)) return null;
+        if ($raw_message = self::strContains($response, "{$prompt->withoutImagePrompts()}** - <@" . self::$user_id . '>')) {
+            return (object) [
+                'status' => ImagineStatus::RUNNING,
+                'id' => $raw_message->id,
+                'prompt' => $prompt,
+                'raw_message' => $raw_message,
+            ];
+        }
 
-        return (object) [
-            'id' => $raw_message->id,
-            'prompt' => $prompt,
-            'raw_message' => $raw_message
-        ];
+        return (object)['status' => ImagineStatus::NOT_START];
     }
 
     public function upscale($message, int $upscale_index = 0)
@@ -190,13 +222,18 @@ class Midjourney {
             'json' => $params
         ]);
 
+        $try = 0;
         $upscaled_photo_url = null;
 
         while (is_null($upscaled_photo_url))
         {
-            $upscaled_photo_url = $this->getUpscale($message, $upscale_index);
+            if ($try >= 10) {
+                throw new Exception("Upscale Timeout");
+            }
 
-            if (is_null($upscaled_photo_url)) sleep(3);
+            sleep(3);
+            $upscaled_photo_url = $this->getUpscale($message, $upscale_index);
+            $try++;
         }
 
         return $upscaled_photo_url;
@@ -223,11 +260,11 @@ class Midjourney {
         $response = json_decode((string) $response->getBody());
 
         $message_index = $upscale_index + 1;
-        $message = self::firstWhere($response, "{$prompt->withoutImagePrompts()}** - Image #{$message_index} <@" . self::$user_id . '>');
+        $message = self::strEndsWith($response, "{$prompt->withoutImagePrompts()}** - Image #{$message_index} <@" . self::$user_id . '>');
 
         if (is_null($message))
         {
-            $message = self::firstWhere($response, "{$prompt->withoutImagePrompts()}** - Upscaled by <@" . self::$user_id . '> (fast)');
+            $message = self::strEndsWith($response, "{$prompt->withoutImagePrompts()}** - Upscaled by <@" . self::$user_id . '> (fast)');
         }
 
         if (is_null($message)) return null;
