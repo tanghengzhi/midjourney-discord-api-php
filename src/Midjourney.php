@@ -115,7 +115,10 @@ class Midjourney {
             'json' => $params
         ]);
 
-        \Log::error("Imagine", ['response' => $response]);
+        \Log::error("Imagine", [
+            'responseStatus' => $response->getStatusCode(),
+            'responseBody' => $response->getBody(),
+        ]);
 
         sleep(8);
 
