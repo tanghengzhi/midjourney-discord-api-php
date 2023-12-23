@@ -140,11 +140,11 @@ class Midjourney {
 
         while ($imagineMessage->status != ImagineStatus::FINISHED)
         {
-            if ($try >= 3 && $imagineMessage->status == ImagineStatus::NOT_START) {
+            if ($try >= 6 && $imagineMessage->status == ImagineStatus::NOT_START) {
                 throw new Exception("Imagine Start Timeout");
             }
 
-            if ($try >= 10) {
+            if ($try >= 12) {
                 throw new Exception("Imagine Timeout");
             }
 
